@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng thông tin nội bộ Unik Green</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9f9f9; }
+    .container { max-width: 960px; margin: auto; padding: 20px; }
+    h1 { text-align: center; color: #2c3e50; }
+    .tabs { display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+    .tab-button { background: #ecf0f1; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; }
+    .tab-button.active { background: #3498db; color: white; }
+    .content { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .item { border-bottom: 1px solid #ddd; padding: 10px 0; }
+    .item h2 { margin: 0; font-size: 18px; color: #34495e; }
+    .item p.date { font-size: 12px; color: #999; margin: 4px 0; }
+    .item a { color: #2980b9; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Cổng thông tin nội bộ Unik Green</h1>
+    <div class="tabs" id="tabs"></div>
+    <div class="content" id="content">Đang tải dữ liệu...</div>
+  </div>
+
+  <script>
+    const tabList = [
+      { id: "tin-tuc", label: "Tin tức & Hoạt động" },
+      { id: "van-ban", label: "Văn bản - Quyết định" },
+      { id: "bieu-mau", label: "Biểu mẫu" },
+      { id: "tai-lieu", label: "Tài liệu & Hướng dẫn" },
+      { id: "bao-cao", label: "Báo cáo & Kế hoạch" },
+      { id: "nhan-su", label: "Nhân sự & Văn hoá" },
+      { id: "he-thong", label: "Hệ thống nội bộ" },
+      { id: "gop-y", label: "Góp ý - Hỏi đáp" }
+    ];
+
+    const tabsDiv = document.getElementById("tabs");
+    const contentDiv = document.getElementById("content");
+
+    tabList.forEach(tab => {
+      const btn = document.createElement("button");
+      btn.className = "tab-button";
+      btn.textContent = tab.label;
+      btn.onclick = () => loadTab(tab.id);
+      btn.id = `btn-${tab.id}`;
+      tabsDiv.appendChild(btn);
+    });
+
+    function loadTab(tab) {
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+      document.getElementById(`btn-${tab}`).classList.add('active');
+      contentDiv.innerHTML = 'Đang tải dữ liệu...';
+
+      fetch(`https://script.google.com/macros/s/AKfycbxq0Dm5RERlCRtqjn3t1xXH_fm2NwwervB271AzkvMpiXACh75ztbsnZ27bV69Zk7Lf/exec?page=${tab}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.items && data.items.length > 0) {
+            const html = data.items.map(item => `
+              <div class="item">
+                <h2>${item.title}</h2>
+                <p class="date">${item.date}</p>
+                <p>${item.content}</p>
+                ${item.link ? `<a href="${item.link}" target="_blank">Xem chi tiết</a>` : ""}
+              </div>`).join('');
+            contentDiv.innerHTML = html;
+          } else {
+            contentDiv.innerHTML = 'Không có dữ liệu.';
+          }
+        })
+        .catch(err => {
+          contentDiv.innerHTML = 'Lỗi khi tải dữ liệu.';
+          console.error(err);
+        });
+    }
+
+    loadTab('tin-tuc'); // Load tab mặc định
+  </script>
+</body>
+</html>
